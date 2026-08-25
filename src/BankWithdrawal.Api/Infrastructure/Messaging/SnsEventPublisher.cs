@@ -35,15 +35,14 @@
                 {
                     TopicArn = topicArn,
                     Message = payload,
-
-                    MessageAttributes =
-                {
-                    ["EventType"] = new MessageAttributeValue
+                    MessageAttributes = new Dictionary<string, MessageAttributeValue>
                     {
-                        DataType = "String",
-                        StringValue = eventType
+                        ["EventType"] = new MessageAttributeValue
+                        {
+                            DataType = "String",
+                            StringValue = eventType
+                        }
                     }
-                }
                 };
 
                 var response =
