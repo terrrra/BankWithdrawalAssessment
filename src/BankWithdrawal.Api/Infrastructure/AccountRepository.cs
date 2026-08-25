@@ -60,25 +60,17 @@ namespace BankWithdrawal.Api.Infrastructure
                     .Value = accountId;
 
                 var rowsAffected =
-                    await updateCommand.ExecuteNonQueryAsync(
-                        cancellationToken);
+                    await updateCommand.ExecuteNonQueryAsync( cancellationToken);
 
                 if (rowsAffected == 0)
                 {
-                    var accountExists = await AccountExistsAsync(
-                        accountId,
-                        connection,
-                        transaction,
-                        cancellationToken);
+                    var accountExists = await AccountExistsAsync(accountId,connection,transaction,cancellationToken);
 
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                    await transaction.RollbackAsync(cancellationToken);
 
                     if (!accountExists)
                     {
-                        _logger.LogWarning(
-                            "Withdrawal rejected because AccountId {AccountId} does not exist.",
-                            accountId);
+                        _logger.LogWarning( "Withdrawal rejected because AccountId {AccountId} does not exist.",accountId);
 
                         return new WithdrawalResult
                         {
@@ -86,9 +78,7 @@ namespace BankWithdrawal.Api.Infrastructure
                         };
                     }
 
-                    _logger.LogWarning(
-                        "Withdrawal rejected because AccountId {AccountId} has insufficient funds.",
-                        accountId);
+                    _logger.LogWarning("Withdrawal rejected because AccountId {AccountId} has insufficient funds.",accountId);
 
                     return new WithdrawalResult
                     {
@@ -130,10 +120,7 @@ namespace BankWithdrawal.Api.Infrastructure
                     """;
 
                 await using var withdrawalCommand =
-                    new SqlCommand(
-                        insertWithdrawalSql,
-                        connection,
-                        transaction);
+                    new SqlCommand(insertWithdrawalSql,connection,transaction);
 
                 withdrawalCommand.Parameters
                     .Add("@Id", SqlDbType.UniqueIdentifier)
@@ -143,9 +130,7 @@ namespace BankWithdrawal.Api.Infrastructure
                     .Add("@AccountId", SqlDbType.BigInt)
                     .Value = accountId;
 
-                AddAmountParameter(
-                    withdrawalCommand,
-                    amount);
+                AddAmountParameter(withdrawalCommand,amount);
 
                 withdrawalCommand.Parameters
                     .Add("@Status", SqlDbType.NVarChar, 30)
@@ -155,8 +140,7 @@ namespace BankWithdrawal.Api.Infrastructure
                     .Add("@CreatedAtUtc", SqlDbType.DateTime2)
                     .Value = createdAtUtc;
 
-                await withdrawalCommand.ExecuteNonQueryAsync(
-                    cancellationToken);
+                await withdrawalCommand.ExecuteNonQueryAsync(cancellationToken);
 
                 #endregion
 
@@ -173,8 +157,7 @@ namespace BankWithdrawal.Api.Infrastructure
                     OccurredAtUtc = createdAtUtc
                 };
 
-                var payload =
-                    JsonSerializer.Serialize(withdrawalEvent);
+                var payload = JsonSerializer.Serialize(withdrawalEvent);
 
                 const string insertOutboxSql = """
                     INSERT INTO OutboxMessages
@@ -196,10 +179,7 @@ namespace BankWithdrawal.Api.Infrastructure
                     """;
 
                 await using var outboxCommand =
-                    new SqlCommand(
-                        insertOutboxSql,
-                        connection,
-                        transaction);
+                    new SqlCommand(insertOutboxSql, connection, transaction);
 
                 outboxCommand.Parameters
                     .Add("@Id", SqlDbType.UniqueIdentifier)
@@ -217,21 +197,16 @@ namespace BankWithdrawal.Api.Infrastructure
                     .Add("@CreatedAtUtc", SqlDbType.DateTime2)
                     .Value = createdAtUtc;
 
-                await outboxCommand.ExecuteNonQueryAsync(
-                    cancellationToken);
+                await outboxCommand.ExecuteNonQueryAsync(cancellationToken);
 
                 #endregion
 
 
                 #region Commit Transaction
 
-                await transaction.CommitAsync(
-                    cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
-                _logger.LogInformation(
-                    "Withdrawal {WithdrawalId} completed for AccountId {AccountId}.",
-                    withdrawalId,
-                    accountId);
+                _logger.LogInformation("Withdrawal {WithdrawalId} completed for AccountId {AccountId}.",withdrawalId, accountId);
 
                 return new WithdrawalResult
                 {
@@ -247,21 +222,14 @@ namespace BankWithdrawal.Api.Infrastructure
 
                 try
                 {
-                    await transaction.RollbackAsync(
-                        cancellationToken);
+                    await transaction.RollbackAsync(cancellationToken);
                 }
                 catch (Exception rollbackException)
                 {
-                    _logger.LogError(
-                        rollbackException,
-                        "Rollback failed for AccountId {AccountId}.",
-                        accountId);
+                    _logger.LogError( rollbackException, "Rollback failed for AccountId {AccountId}.",accountId);
                 }
 
-                _logger.LogError(
-                    ex,
-                    "Withdrawal transaction failed for AccountId {AccountId}.",
-                    accountId);
+                _logger.LogError( ex, "Withdrawal transaction failed for AccountId {AccountId}.", accountId);
 
                 throw;
 
@@ -271,11 +239,7 @@ namespace BankWithdrawal.Api.Infrastructure
 
         #region Helper Methods
 
-        private static async Task<bool> AccountExistsAsync(
-            long accountId,
-            SqlConnection connection,
-            SqlTransaction transaction,
-            CancellationToken cancellationToken)
+        private static async Task<bool> AccountExistsAsync(long accountId,SqlConnection connection, SqlTransaction transaction, CancellationToken cancellationToken)
         {
             const string sql = """
                 SELECT COUNT(1)
@@ -284,18 +248,14 @@ namespace BankWithdrawal.Api.Infrastructure
                 """;
 
             await using var command =
-                new SqlCommand(
-                    sql,
-                    connection,
-                    transaction);
+                new SqlCommand(sql,connection,transaction);
 
             command.Parameters
                 .Add("@AccountId", SqlDbType.BigInt)
                 .Value = accountId;
 
             var result =
-                await command.ExecuteScalarAsync(
-                    cancellationToken);
+                await command.ExecuteScalarAsync(cancellationToken);
 
             return Convert.ToInt32(result) > 0;
         }
@@ -304,10 +264,7 @@ namespace BankWithdrawal.Api.Infrastructure
             SqlCommand command,
             decimal amount)
         {
-            var parameter =
-                command.Parameters.Add(
-                    "@Amount",
-                    SqlDbType.Decimal);
+            var parameter = command.Parameters.Add("@Amount",SqlDbType.Decimal);
 
             parameter.Precision = 18;
             parameter.Scale = 2;

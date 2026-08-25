@@ -1,6 +1,7 @@
 ﻿namespace BankWithdrawal.Api.Infrastructure.Messaging
 {
-    public class IEventPublisher
+    public interface IEventPublisher
     {
+        Task PublishAsync(string eventType,string payload,CancellationToken cancellationToken);
     }
 }
