@@ -213,7 +213,7 @@ Given more time, I would add:
 -   Stronger downstream idempotency/deduplication
 -   Metrics and alerting for failed or ageing outbox messages
 -   Additional structured logging and correlation identifiers
--   Clean up the Repo to Offload some logic to other repos and Services involved.
+-   Further refactor repository responsibilities where appropriate, particularly withdrawal audit and outbox persistence.
 -   Database migrations
 -   CQRS where justified by future complexity. 
 
