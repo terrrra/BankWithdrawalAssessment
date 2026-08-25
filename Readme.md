@@ -50,44 +50,9 @@ the review.
 
 ## Architecture
 
-``` text
-POST /api/accounts/{accountId}/withdrawals
-                  |
-                  v
-       WithdrawalsController
-                  |
-                  v
-         WithdrawalService
-                  |
-                  v
-        IAccountRepository
-                  |
-      +-----------+-----------+
-      |     SQL TRANSACTION   |
-      |                       |
-      |  1. Update Account    |
-      |  2. Insert Withdrawal |
-      |  3. Insert Outbox     |
-      |                       |
-      +-----------+-----------+
-                  |
-                COMMIT
-                  |
-                  v
-          OutboxMessages
-                  |
-                  v
-          OutboxDispatcher
-                  |
-                  v
-          IEventPublisher
-                  |
-                  v
-              AWS SNS
-                  |
-                  v
-             Subscriber
-```
+
+<img width="1024" height="1536" alt="9337bdd1-0742-4804-8f92-8263a8e5d463" src="https://github.com/user-attachments/assets/c70256b2-aa1c-4093-87d1-50bf9bdadf6e" />
+
 
 If any database operation fails before commit, the account update,
 withdrawal record and outbox message are rolled back together. SNS
