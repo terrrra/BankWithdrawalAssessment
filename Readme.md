@@ -181,41 +181,8 @@ Content-Type: application/json
 
 ## End-to-End Flow
 
-``` text
-HTTP Request
-     |
-     v
-Validate Amount
-     |
-     v
-Atomic Account Update
-     |
-     v
-Insert Withdrawal
-     |
-     v
-Insert Outbox Message
-     |
-     v
-COMMIT
-     |
-     v
-API Response
+<img width="1536" height="1024" alt="Image for the End to End" src="https://github.com/user-attachments/assets/468193fa-c7d4-461c-a384-97216ba8a378" />
 
-OutboxDispatcher
-     |
-     v
-Find Unpublished Messages
-     |
-     v
-AWS SNS
-     |
-     v
-Subscriber
-     |
-     v
-Mark PublishedAtUtc
-```
 
 ## Validation Performed
 
