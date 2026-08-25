@@ -1,17 +1,18 @@
-﻿using BankWithdrawal.Api.Application.Services;
+﻿using BankWithdrawal.Api.Application.Models;
+using BankWithdrawal.Api.Application.Services;
 using BankWithdrawal.Api.Contracts;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankWithdrawal.Api.Controllers
 {
-    
     [ApiController]
     [Route("api/accounts/{accountId:long}/withdrawals")]
     public class WithdrawalsController : ControllerBase
     {
         private readonly WithdrawalService _withdrawalService;
 
-        public WithdrawalsController(WithdrawalService withdrawalService)
+        public WithdrawalsController(
+            WithdrawalService withdrawalService)
         {
             _withdrawalService = withdrawalService;
         }
@@ -22,24 +23,38 @@ namespace BankWithdrawal.Api.Controllers
             [FromBody] WithdrawRequest request,
             CancellationToken cancellationToken)
         {
-            var result = await _withdrawalService.WithdrawAsync(accountId,request.Amount,cancellationToken);
+            var result =
+                await _withdrawalService.WithdrawAsync(
+                    accountId,
+                    request.Amount,
+                    cancellationToken);
 
-            if (!result.Successful)
+            return result.Outcome switch
             {
-                return BadRequest(new
-                {
-                    message = "Withdrawal could not be completed."
-                });
-            }
+                WithdrawalOutcome.Successful =>
+                    Ok(new
+                    {
+                        withdrawalId = result.WithdrawalId,
+                        accountId,
+                        amount = request.Amount,
+                        status = "Successful"
+                    }),
 
-            return Ok(new
-            {
-                withdrawalId = result.WithdrawalId,
-                accountId,
-                amount = request.Amount,
-                status = "Successful"
-            });
+                WithdrawalOutcome.AccountNotFound =>
+                    NotFound(new
+                    {
+                        message = "Account was not found."
+                    }),
+
+                WithdrawalOutcome.InsufficientFunds =>
+                    BadRequest(new
+                    {
+                        message = "Insufficient funds."
+                    }),
+
+                _ => StatusCode(
+                    StatusCodes.Status500InternalServerError)
+            };
         }
     }
-
 }

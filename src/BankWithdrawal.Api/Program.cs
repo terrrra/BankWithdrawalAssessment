@@ -1,5 +1,6 @@
-using BankWithdrawal.Api.Infrastructure;
 using BankWithdrawal.Api.Application.Services;
+using BankWithdrawal.Api.BackgroundServices;
+using BankWithdrawal.Api.Infrastructure;
 
 internal class Program
 {
@@ -13,6 +14,7 @@ internal class Program
         builder.Services.AddOpenApi();
 
         builder.Services.AddScoped<WithdrawalService>();
+        builder.Services.AddHostedService<OutboxDispatcher>();
         builder.Services.AddScoped<IAccountRepository, AccountRepository>();
         var app = builder.Build();
 
